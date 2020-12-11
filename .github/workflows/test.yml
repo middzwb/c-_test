@@ -3,7 +3,7 @@ name: CMake
 on:
   push:
     paths: 
-      - '**.cc'
+      - '**'
 
 jobs:
   build:
@@ -15,9 +15,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      
 
     - name: Build
       shell: bash
+      env:
+        CC:   gcc-10
+        CXX:  g++-10
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: |
         mkdir build && cd build
