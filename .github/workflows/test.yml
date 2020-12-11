@@ -27,6 +27,7 @@ jobs:
         mkdir build && cd build
         cmake ..
         make
+        pwd
         build/bin/test
 
         
