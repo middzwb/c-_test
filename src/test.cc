@@ -3,6 +3,12 @@
 #include <sstream>
 #include <thread>
 #include <cassert>
+#include <optional>
+#include <map>
+#include <unordered_map>
+#include <future>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 
@@ -42,6 +48,7 @@ public:
 public:
     shared_ptr<T> out_;
 };
+
 void test_response() {
     class Temp {
     public:
@@ -61,13 +68,60 @@ void test_response() {
         assert(s.use_count() == 1);
         Response<ostringstream> mr(move(s));
         assert(s.use_count() == 0 && mr.out_.use_count() == 1);
+
+        auto sstr{make_shared<stringstream>()};
+        auto& ss = *sstr;
+        ss << "a";
+        ss << "b";
+        assert(ss.str() == "ab");
     }
 
+    {
+        unordered_map<string, string> tmp;
+        tmp["range"] = "0-1023";
+        optional<unordered_map<string, string>> header(move(tmp));
+        assert(tmp.empty());
+        assert(header);
+        assert((*header)["range"] == "0-1023");
+        optional<unordered_map<string, string>> n;
+        assert(!n);
+        auto test_op = [](const optional<unordered_map<string, string>>& opt) -> bool {
+            return opt.has_value();
+        };
+        assert(!test_op(nullopt));
+    }
+}
+
+void test_future() {
+    cout << "Test future ..." << endl;
+    promise<void> pro;
+    auto fu = pro.get_future();
+    unordered_map<string, string> tmp;
+
+    using namespace std::chrono_literals;
+    thread worker{[&pro, &tmp]() {
+        this_thread::sleep_for(3s);
+        tmp.emplace("foo", "bar");
+        pro.set_value();
+    }};
+
+    fu.get();
+    assert(tmp.size() == 1 && tmp["foo"] == "bar");
+    worker.join(); // https://en.cppreference.com/w/cpp/thread/thread/~thread; without join, terminate() is called.
+
+    mutex m1;
+    {
+        lock_guard<mutex> locker(m1);
+    }
+    {
+        lock_guard locker(m1);
+    }
 }
 
 void main_test() {
     test_make_request();
     test_response();
+    test_future();
 }
 
 int main()
