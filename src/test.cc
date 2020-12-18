@@ -9,6 +9,7 @@
 #include <future>
 #include <thread>
 #include <mutex>
+#include <type_traits>
 
 using namespace std;
 
@@ -199,6 +200,56 @@ void test_stream() {
         istr.read(buf, size);
         count = istr.gcount();
     }
+    {
+        stringstream ss;
+        ss << "hello" << " world";
+        istringstream istr(move(ss.str()));
+    }
+}
+
+class ZError {
+public:
+    ZError() = default;
+private:
+    string x_;
+};
+class ZResp {
+public:
+    ZResp() = default;
+    ZResp(int i, string s)
+        :i_(i), s_(s)
+    {}
+private:
+    int i_;
+    string s_;
+};
+template<typename R>
+class Outcome {
+public:
+    Outcome(const ZError& e)
+        :error_(e)
+    {cout << "const error" << endl;}
+    Outcome(ZError&& e)
+        :error_(move(e))
+    {cout << "r error" << endl;}
+    template<typename ...Args, typename = enable_if_t<is_constructible_v<R, Args&&...>>>
+    Outcome(Args&&... args)
+        :result_(forward<Args>(args)...)
+    {cout << "forward Args" << endl;}
+    const ZError& error() const {return error_;}
+    ZError& error() {return error_;}
+private:
+    R result_;
+    ZError error_;
+};
+
+void test_type_trait() {
+    cout << "Test type trait ..." << endl;
+    Outcome<ZResp> outcome{ZError()};
+    //Outcome<ZResp> outcome(ZError()); // for member ‘error’ in ‘outcome’, which is of non-class type ‘Outcome<ZResp>(ZError (*)())
+    Outcome<ZResp> outcome2(1, "");
+
+    Outcome<ZResp> outcome3(outcome.error());
 }
 
 void main_test() {
@@ -206,6 +257,7 @@ void main_test() {
     test_response();
     test_future();
     test_stream();
+    test_type_trait();
 }
 
 int main()
