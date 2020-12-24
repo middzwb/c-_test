@@ -10,8 +10,13 @@
 #include <thread>
 #include <mutex>
 #include <type_traits>
+#include <chrono>
 
 using namespace std;
+
+void test_reorder();
+void test_seq_cst();
+void test_acq_rel();
 
 shared_ptr<ostringstream> make_request(const shared_ptr<istringstream>& ss) {
     if (ss) {
@@ -169,7 +174,7 @@ void test_future() {
 
     using namespace std::chrono_literals;
     thread worker{[&pro, &tmp]() {
-        this_thread::sleep_for(1s);
+        this_thread::sleep_for(1ms);
         tmp.emplace("foo", "bar");
         pro.set_value();
     }};
@@ -252,12 +257,80 @@ void test_type_trait() {
     Outcome<ZResp> outcome3(outcome.error());
 }
 
+void test_false_sharing() {
+    cout  << "Test false sharing ..." << endl;
+    struct foo {
+        int32_t x;
+        int32_t y;
+    };
+    struct foo64 {
+        int64_t x;
+        int64_t y;
+    };
+
+    foo f32;
+    foo64 f64;
+
+    auto start = chrono::steady_clock::now();
+    thread t{[&f32]() -> int32_t {
+        int s = 0;
+        for (auto i = 0; i < 1000000; ++i) {
+            s += f32.x;
+        }
+        return s;
+    }};
+    thread t2{[&f32]() {
+        for (auto i = 0; i < 1000000; ++i) {
+            ++f32.y;
+        }
+    }};
+    t.join();
+    t2.join();
+    auto end = chrono::steady_clock::now();
+
+    thread t3{[&f64]() -> int64_t {
+        int s = 0;
+        for (auto i = 0; i < 1000000; ++i) {
+            s += f64.x;
+        }
+        return s;
+    }};
+    thread t4{[&f64]() {
+        for (auto i = 0; i < 1000000; ++i) {
+            ++f64.y;
+        }
+    }};
+    t3.join();
+    t4.join();
+    auto end64 = chrono::steady_clock::now();
+
+    thread t5{[&f32]() {
+        for (auto i = 0; i < 1000000; ++i) {
+            ++f32.y;
+        }
+    }};
+    t5.join();
+    auto end_single_32 = chrono::steady_clock::now();
+    cout << "32bit elapsed " << (end - start).count() << endl
+        << "64bit elapsed " << (end64 - end).count() << endl
+        << "32bit single elapsed " << (end_single_32 - end64).count() << endl;
+}
+
+void test_async() {
+    cout << "Test async ..." << endl;
+}
+
 void main_test() {
     test_make_request();
     test_response();
     test_future();
     test_stream();
     test_type_trait();
+    test_false_sharing();
+    test_async();
+    test_reorder();
+    //test_seq_cst();
+    //test_acq_rel();
 }
 
 int main()

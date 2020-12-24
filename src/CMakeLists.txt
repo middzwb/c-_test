@@ -1,4 +1,5 @@
 set(test_srcs
+    reorder.cc
     test.cc)
 add_executable(test ${test_srcs})
 
