@@ -1,3 +1,5 @@
+#include "MultiThread.h"
+
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -11,12 +13,15 @@
 #include <mutex>
 #include <type_traits>
 #include <chrono>
+#include <any>
+#include <random>
 
 using namespace std;
 
 void test_reorder();
-void test_seq_cst();
-void test_acq_rel();
+// x86-64 order: https://en.wikipedia.org/wiki/Memory_ordering#Runtime_memory_ordering
+// void test_seq_cst();
+// void test_acq_rel();
 
 shared_ptr<ostringstream> make_request(const shared_ptr<istringstream>& ss) {
     if (ss) {
@@ -320,17 +325,113 @@ void test_async() {
     cout << "Test async ..." << endl;
 }
 
+void test_align() {
+    cout << "Test align ..." << endl;
+    struct A {
+        char a;
+        char b;
+    };
+    struct B {
+        char a;
+        int b;
+    };
+    struct C {
+        char a;
+    };
+    struct __attribute__((packed)) D {
+        char a;
+        int b;
+    };
+    static_assert(sizeof(A) == 2);
+    static_assert(sizeof(B) == 8);
+    static_assert(sizeof(C) == 1);
+    static_assert(sizeof(D) == 5);
+    cout << "sizeof(A)=" << sizeof(A) << " alignof(A)=" << alignof(A) << endl
+        << "sizeof(B)=" << sizeof(B) << " alignof(B)=" << alignof(B) << endl
+        << "sizeof(C)=" << sizeof(C) << " alignof(C)=" << alignof(C) << endl
+        << "sizeof(D)=" << sizeof(D) << " alignof(D)=" << alignof(D) << endl;
+}
+
+void test_m_cout() {
+    cout << "Test multi thread std out ..." << endl;
+}
+
+void test_any() {
+    cout << "Test any ..." << endl;
+
+    std::any a1 = 1;
+    auto a2 = make_any<int>(2);
+    auto a3 = any_cast<int>(a2);
+}
+
+void test_spin_lock() {
+    cout << "Test spin lock ..." << endl;
+    SpinLock lock;
+
+    string critical;
+    thread t1{[&]() {
+        lock.Lock();
+        critical = "critical_t1";
+        lock.Unlock();
+    }};
+    lock.Lock();
+    critical = "qwerty";
+    lock.Unlock();
+    t1.join();
+    cout << critical << endl;
+}
+
+// generate leetcode array test input
+void generate_random_array(int range, int len) {
+    mt19937 rd{random_device{}()};
+    uniform_int_distribution<int> dist(0, range);
+    stringstream ss;
+    ss << "[";
+    for (int i = 0; i < len - 1; ++i) {
+        ss << to_string(dist(rd)) << ",";
+    }
+    ss << to_string(dist(rd)) << "]";
+    cout << ss.str() << endl;
+}
+
+void test_iterator() {
+    cout << "Test iterator ..." << endl;
+    vector<int> v{1,2,3,4,5,6,7,8};
+    assert(v.end() - v.begin() == v.size());
+    for (auto ri = v.rbegin(); ri != v.rend(); ++ri) {
+        cout << *ri;
+    }
+    cout << endl;
+}
+
+void test_double_accumulate() {
+    cout << "Test double accum ..." << endl;
+    vector<double> v{1.1,2.2,3.3,4.4,5.5,6.6,7.7};
+    auto r = accumulate(v.begin(), v.end(), 0.0);
+    auto r2 = accumulate(v.begin(), v.end(), 0);
+    cout << r << " " << r2 << endl;
+}
+
 void main_test() {
     test_make_request();
     test_response();
     test_future();
     test_stream();
     test_type_trait();
-    test_false_sharing();
+    //test_false_sharing();
     test_async();
-    test_reorder();
+    //test_reorder();
+    // TODO: run in android
     //test_seq_cst();
     //test_acq_rel();
+    test_align();
+    test_m_cout();
+    test_any();
+    //test_epoll();
+    generate_random_array(900, 500);
+    test_spin_lock();
+    test_iterator();
+    test_double_accumulate();
 }
 
 int main()
