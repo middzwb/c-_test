@@ -19,6 +19,7 @@
 using namespace std;
 
 void test_reorder();
+void template_test();
 // x86-64 order: https://en.wikipedia.org/wiki/Memory_ordering#Runtime_memory_ordering
 // void test_seq_cst();
 // void test_acq_rel();
@@ -428,10 +429,11 @@ void main_test() {
     test_m_cout();
     test_any();
     //test_epoll();
-    generate_random_array(900, 500);
+    //generate_random_array(900, 500);
     test_spin_lock();
     test_iterator();
     test_double_accumulate();
+    template_test();
 }
 
 int main()
