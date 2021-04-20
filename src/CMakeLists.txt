@@ -1,6 +1,6 @@
 set(test_srcs
     reorder.cc
-    template.cc
+    black_magic.cc
     test.cc)
 add_executable(test ${test_srcs})
 
