@@ -15,6 +15,7 @@
 #include <chrono>
 #include <any>
 #include <random>
+#include <typeinfo>
 
 using namespace std;
 
@@ -407,6 +408,9 @@ void test_double_accumulate() {
     auto r = accumulate(v.begin(), v.end(), 0.0);
     auto r2 = accumulate(v.begin(), v.end(), 0);
     cout << r << " " << r2 << endl;
+
+    auto i2 = new int(1), i = new int(2);
+    cout << typeid(i).name() << endl << typeid(i2).name() << endl;
 }
 
 void main_test() {
