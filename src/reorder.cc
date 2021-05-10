@@ -125,44 +125,44 @@ void test_seq_cst() {
     cout << "Test memory_order_seq_cst ..." << endl;
     for (auto i = 0; ; ++i) {
 
-    atomic_bool x{false};
-    atomic_bool y{false};
-    atomic_int z{0};
+        atomic_bool x{false};
+        atomic_bool y{false};
+        atomic_int z{0};
 
-    thread a{[&]() {
-        uniform_int_distribution<int> dist(0, 100);
-        random_device rd;
-        while (dist(rd) % 8 != 0)
-            ;
-        x.store(true, memory_order_relaxed);
-    }};
-    thread b{[&]() {
-        uniform_int_distribution<int> dist(0, 100);
-        random_device rd;
-        while (dist(rd) % 8 != 0)
-            ;
-        y.store(true, memory_order_relaxed);
-    }};
-    thread c{[&]() {
-        while (!x.load(memory_order_relaxed))
-            ;
-        if (y.load(memory_order_relaxed)) {
-            ++z;
-        }
-    }};
-    thread d{[&]() {
-        while (!y.load(memory_order_relaxed))
-            ;
-        if (x.load(memory_order_relaxed)) {
-            ++z;
-        }
-    }};
+        thread a{[&]() {
+            uniform_int_distribution<int> dist(0, 100);
+            random_device rd;
+            while (dist(rd) % 8 != 0)
+                ;
+            x.store(true, memory_order_relaxed);
+        }};
+        thread b{[&]() {
+            uniform_int_distribution<int> dist(0, 100);
+            random_device rd;
+            while (dist(rd) % 8 != 0)
+                ;
+            y.store(true, memory_order_relaxed);
+        }};
+        thread c{[&]() {
+            while (!x.load(memory_order_relaxed))
+                ;
+            if (y.load(memory_order_relaxed)) {
+                ++z;
+            }
+        }};
+        thread d{[&]() {
+            while (!y.load(memory_order_relaxed))
+                ;
+            if (x.load(memory_order_relaxed)) {
+                ++z;
+            }
+        }};
 
-    a.join();
-    b.join();
-    c.join();
-    d.join();
-    assert(z != 0);
+        a.join();
+        b.join();
+        c.join();
+        d.join();
+        assert(z != 0);
     }
 }
 

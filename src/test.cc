@@ -21,8 +21,8 @@ using namespace std;
 void test_reorder();
 void template_test();
 // x86-64 order: https://en.wikipedia.org/wiki/Memory_ordering#Runtime_memory_ordering
-// void test_seq_cst();
-// void test_acq_rel();
+void test_seq_cst();
+void test_acq_rel();
 
 shared_ptr<ostringstream> make_request(const shared_ptr<istringstream>& ss) {
     if (ss) {
@@ -34,7 +34,7 @@ shared_ptr<ostringstream> make_request(const shared_ptr<istringstream>& ss) {
     return nullptr;
 }
 void test_make_request() {
-    auto ss{make_shared<istringstream>("test sstringstream")};
+    auto ss{make_shared<istringstream>("Test sstringstream")};
     auto ret = make_request(ss);
     if (ret) {
         cout << ret->str() << endl;
@@ -347,10 +347,6 @@ void test_align() {
     static_assert(sizeof(B) == 8);
     static_assert(sizeof(C) == 1);
     static_assert(sizeof(D) == 5);
-    cout << "sizeof(A)=" << sizeof(A) << " alignof(A)=" << alignof(A) << endl
-        << "sizeof(B)=" << sizeof(B) << " alignof(B)=" << alignof(B) << endl
-        << "sizeof(C)=" << sizeof(C) << " alignof(C)=" << alignof(C) << endl
-        << "sizeof(D)=" << sizeof(D) << " alignof(D)=" << alignof(D) << endl;
 }
 
 void test_m_cout() {
@@ -415,7 +411,7 @@ void test_double_accumulate() {
 
 void main_test() {
     test_make_request();
-    test_response();
+    //test_response();
     test_future();
     test_stream();
     test_type_trait();
