@@ -413,6 +413,38 @@ void test_double_accumulate() {
     cout << typeid(i).name() << endl << typeid(i2).name() << endl;
 }
 
+unsigned long long int operator "" _M(unsigned long long int i)
+{
+   return i << 20;
+}
+
+/**
+ * @brief 测试auto声明中 引用和指针的类型推断
+ * 
+ */
+void test_auto_deduction()
+{
+   int in = 987;
+   auto ret_ref = [&in]() -> int& {
+      return in;
+   };
+   
+   // i is not in
+   auto i = ret_ref();
+   i = 999;
+   assert(in == 987);
+   auto& i2 = ret_ref();
+   i2 = 999;
+   assert(in == 999); 
+
+   // pi is pointer
+   auto pi = new int(in);
+   assert(*pi == in);
+   // pi2 is pointer too!
+   auto* pi2 = new int(in);
+   assert(*pi2 == in);
+}
+
 void main_test() {
     test_make_request();
     //test_response();
@@ -434,6 +466,7 @@ void main_test() {
     test_iterator();
     test_double_accumulate();
     template_test();
+    test_auto_deduction();
 }
 
 int main()
