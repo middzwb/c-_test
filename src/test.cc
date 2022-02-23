@@ -4,7 +4,6 @@
 #include <memory>
 #include <sstream>
 #include <thread>
-#include <cassert>
 #include <optional>
 #include <map>
 #include <unordered_map>
@@ -16,6 +15,10 @@
 #include <any>
 #include <random>
 #include <typeinfo>
+#include <functional>
+
+#include <cassert>
+#include <cstdint>
 
 using namespace std;
 
@@ -445,6 +448,37 @@ void test_auto_deduction()
    assert(*pi2 == in);
 }
 
+/**
+ * @brief 测试函数指针和std::function的转换
+ * 
+ */
+class TestFunction {
+public:
+   void test(uint64_t, int)
+   {
+      cout << "test" << endl;
+   }
+   string id{"TestFunction"};
+};
+void test_function()
+{
+   using cb_t = void (*)(uint64_t, int);
+   using cb_v2_t = std::function<void(uint64_t, int)>;
+   TestFunction tf;
+   auto cb = std::bind(&TestFunction::test, &tf, std::placeholders::_1, std::placeholders::_2);
+
+   auto read = [](cb_t cb) {
+      cb(0, 0);
+   };
+   // can not convert function to pointer;
+   // read(cb);
+
+   auto read_v2 = [](cb_v2_t cb) {
+      cb(0, 0);
+   };
+   read_v2(cb);
+}
+
 void main_test() {
     test_make_request();
     //test_response();
@@ -467,6 +501,7 @@ void main_test() {
     test_double_accumulate();
     template_test();
     test_auto_deduction();
+    test_function();
 }
 
 int main()
