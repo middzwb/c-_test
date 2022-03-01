@@ -479,7 +479,18 @@ void test_function()
    read_v2(cb);
 }
 
-void main_test() {
+/**
+ * @brief 记录写代码中遇到的编译bug
+ * 
+ */
+void test_compile_bug()
+{
+   // Q: 头文件中定义函数后，编译出现重定义的错误
+   // A: 源文件中定义；小函数可以再头文件中使用inline定义
+}
+
+void main_test()
+{
     test_make_request();
     //test_response();
     test_future();
