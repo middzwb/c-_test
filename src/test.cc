@@ -489,6 +489,22 @@ void test_compile_bug()
    // A: 源文件中定义；小函数可以再头文件中使用inline定义
 }
 
+/**
+ * @brief 测试形参是右值引用的函数参数传递
+ * 
+ */
+void test_rvalue_reference_param()
+{
+   auto x = [](vector<string>&& rv) {
+      // rv是参数，会有引用折叠；所以需要转发为原本的类型
+      vector<string> lv{forward<vector<string>>(rv)};
+      assert(rv.empty());
+   };
+
+   vector<string> input(10);
+   x(move(input));
+}
+
 void main_test()
 {
     test_make_request();
@@ -513,6 +529,7 @@ void main_test()
     template_test();
     test_auto_deduction();
     test_function();
+    test_rvalue_reference_param();
 }
 
 int main()
