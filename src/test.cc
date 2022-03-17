@@ -487,6 +487,14 @@ void test_compile_bug()
 {
    // Q: 头文件中定义函数后，编译出现重定义的错误
    // A: 源文件中定义；小函数可以再头文件中使用inline定义
+
+   // Q: 尽量少使用前置声明
+
+   // Q: 头文件递归包含
+
+   // Q: hpp 多包含，重定义
+   // A: 没有定义，只有类声明；还是重定义。后面把include的路径改掉后就解决了。
+   // #include "cephfs/libcephfs.hpp" ==> #include "include/cephfs/libcephfs.hpp"
 }
 
 /**
