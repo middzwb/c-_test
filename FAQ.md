@@ -37,8 +37,16 @@ void test_compile_bug()
 
 **神奇的bug**
 
-   osdc里的journaler，由于项目原因，拷贝了一份rmajournaler。其中类使用的多个回调函数中，有一个Context func_x不是在类内声明的，只是单纯的friend声明。
+      osdc里的journaler，由于项目原因，拷贝了一份rmajournaler。其中类使用的多个回调函数中，有一个Context func_x不是在类内声明的，只是单纯的friend声明。
 
-   结果: mdlog中有一个journaler成员，结果回调会调用到rmajournaler中的同名函数。
+      结果: mdlog中有一个journaler成员，结果回调会调用到rmajournaler中的同名函数。
 
-   A: 回调函数Context func_x改为类内声明后，问题解决
+      A: 回调函数Context func_x改为类内声明后，问题解决
+
+**神奇的bug2**
+
+      vae引用libcephfs.so，会挂在莫名其妙的地方，后来查聊天记录，别人遇到过同样的堆栈；换下libceph-common.so就好了
+
+      A: 我替换玩libceph-common.so后，也好了
+
+      总结：环境问题很重要，因为很难调试
